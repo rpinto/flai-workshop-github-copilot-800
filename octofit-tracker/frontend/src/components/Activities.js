@@ -32,37 +32,95 @@ function Activities() {
       });
   }, [API_URL]);
 
-  if (loading) return <div className="container mt-4"><p>Loading activities...</p></div>;
-  if (error) return <div className="container mt-4"><p className="text-danger">Error: {error}</p></div>;
+  const getActivityIcon = (type) => {
+    const icons = {
+      'Running': '🏃',
+      'Cycling': '🚴',
+      'Swimming': '🏊',
+      'Walking': '🚶',
+      'Yoga': '🧘',
+      'Weightlifting': '🏋️',
+      'CrossFit': '💪'
+    };
+    return icons[type] || '⚡';
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid Date';
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return 'Invalid Date';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-4">
+        <div className="loading-container">
+          <div className="text-center">
+            <div className="spinner-border text-info" role="status" style={{ width: '3rem', height: '3rem' }}>
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-3 text-muted">Loading activities...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="container mt-4">
+        <div className="alert alert-danger" role="alert">
+          <h4 className="alert-heading">⚠️ Error Loading Activities</h4>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-4">
-      <h2>Activities</h2>
-      <div className="table-responsive">
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Type</th>
-              <th>Duration (min)</th>
-              <th>Calories</th>
-              <th>Distance (km)</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {activities.map((activity, index) => (
-              <tr key={activity.id || index}>
-                <td>{activity.user}</td>
-                <td>{activity.type}</td>
-                <td>{activity.duration}</td>
-                <td>{activity.calories}</td>
-                <td>{activity.distance}</td>
-                <td>{new Date(activity.date).toLocaleDateString()}</td>
+      <div className="page-header">
+        <h2>🎯 Activities</h2>
+      </div>
+      <div className="table-container">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h5 className="mb-0">Total Activities: <span className="badge bg-info">{activities.length}</span></h5>
+        </div>
+        <div className="table-responsive">
+          <table className="table table-hover">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Type</th>
+                <th>Duration (min)</th>
+                <th>Calories</th>
+                <th>Distance (km)</th>
+                <th>Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {activities.map((activity, index) => (
+                <tr key={activity.id || index}>
+                  <td><strong>{activity.user_id}</strong></td>
+                  <td>
+                    <span className="badge bg-info">
+                      {getActivityIcon(activity.activity_type)} {activity.activity_type}
+                    </span>
+                  </td>
+                  <td>{activity.duration}</td>
+                  <td><span className="badge bg-danger">{activity.calories} cal</span></td>
+                  <td>{activity.distance ? activity.distance.toFixed(2) : 'N/A'}</td>
+                  <td>{formatDate(activity.date)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
